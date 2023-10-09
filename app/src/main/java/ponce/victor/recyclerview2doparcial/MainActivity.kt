@@ -2,10 +2,12 @@ package ponce.victor.recyclerview2doparcial
 
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.util.Log
 import android.widget.Button
 import android.widget.EditText
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import ponce.victor.recyclerview2doparcial.databinding.ActivityMainBinding
 
 //Para poder usar view binding, hay que agregar lo siguiente en Gradle Scripts/build.gradle (Module: app):, dentro de andorid {} escribir buildFeatures { viewBinding = true }
 
@@ -13,9 +15,17 @@ import androidx.recyclerview.widget.RecyclerView
 
 
 class MainActivity : AppCompatActivity() {
+    //declaro la variable binding esto ya es de lo NUEVO DEL BINDING
+    private lateinit var binding: ActivityMainBinding
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_main)
+        //Inicializo la varibale, esto ya es de lo NUEVO DEL BINDING
+        binding = ActivityMainBinding.inflate(layoutInflater)
+        //comentamos la siguiente linea, porque ya no usamos el layout normal
+        //setContentView(R.layout.activity_main)
+        //ahora usamos el binding.root
+        setContentView(binding.root)
 
 //definimos tareas predefinidas, para que se llene el recycler view
 
@@ -23,17 +33,60 @@ class MainActivity : AppCompatActivity() {
             Tarea("Aprender Recycler View", false),
             Tarea("Aprender View Binding", false))
 
-        // esto es lo que tengo definido en su xml
 
-        val rvTask : RecyclerView = findViewById(R.id.rvTask)
-        val buttonAdd : Button = findViewById(R.id.buttonAgregar)
-        val etTask : EditText = findViewById(R.id.etTask)
 
+        //Esto es del shared preferences-------------------------------------------------------------
+        val sharedPreferences = getSharedPreferences("my_preferences", MODE_PRIVATE)
+        val editor = sharedPreferences.edit()
+        editor.putBoolean("notifications_enabled", true)
+        editor.apply()
+
+        //Esto es del shared preferences-------------------------------------------------------------
+
+// ya no necesitamos las variables de abajo, porque ya no usamos el layout normal, esto ya es de lo NUEVO DEL BINDING-----------------------------------
+        /*
+         // esto es lo que tengo definido en su xml
+
+         val rvTask : RecyclerView = findViewById(R.id.rvTask)
+         val buttonAdd : Button = findViewById(R.id.buttonAgregar)
+         val etTask : EditText = findViewById(R.id.etTask)
+         */
+
+// hasta aqui ya no ocupamos-----------------------------------------------------------------
         // creamos el adapter
         val adapter = TaskAdapter(taskList)
-        rvTask.adapter = adapter
-        rvTask.layoutManager = LinearLayoutManager(this)
 
+        //ahora usamos el binding
+        binding.rvTask.adapter = adapter
+        binding.rvTask.layoutManager = LinearLayoutManager(this)
+        //rvTask.adapter = adapter
+        //rvTask.layoutManager = LinearLayoutManager(this)
+
+        //ahora usamos el binding en el boton
+
+        binding.buttonAgregar.setOnClickListener {
+            val title = binding.etTask.text.toString()
+            val task = Tarea(title, false)
+            taskList.add(task)
+
+            // le decimos al adapter que se actualice
+            adapter.notifyItemInserted(taskList.size - 1)
+
+            //Esto es del shared preferences-------------------------------------------------------------
+            val sharedPreferences = getSharedPreferences("my_preferences", MODE_PRIVATE)
+            val notificationsEnabled = sharedPreferences.getBoolean("notifications_enabled", false)
+
+            Log.d("VICTOR", "Notifications are enabled:" +notificationsEnabled)
+
+            //Esto es del shared preferences-------------------------------------------------------------
+
+
+            // para checar el archivo te vas a device file explorer, data/data/ponce.victor.recyclerview2doparcial/shared_prefs/my_preferences.xml
+
+
+        }
+
+        /*
         buttonAdd.setOnClickListener {
             val title = etTask.text.toString()
             val task = Tarea(title, false)
@@ -41,6 +94,6 @@ class MainActivity : AppCompatActivity() {
 
             // le decimos al adapter que se actualice
             adapter.notifyItemInserted(taskList.size - 1)
-        }
+        }*/
     }
 }
